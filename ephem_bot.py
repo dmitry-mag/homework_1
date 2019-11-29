@@ -15,6 +15,12 @@
 import logging
 import ephem
 
+try:
+    with open('key.txt', 'r') as key_file:
+        KEY = key_file.readline()
+except FileNotFoundError:
+    print('WARNING!! key.txt not found!!')
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
@@ -40,10 +46,11 @@ def greet_user(bot, update):
 
 def planet_info(bot, update):
     planet_name = update.message.text.split()[1]
-    try:
-        planet = eval('ephem.' + planet_name.capitalize())()
-    except AttributeError:
+    planet_class = getattr(ephem, planet_name.capitalize(), None)
+    if not planet_class:
+        update.message.reply_text('Не знаю такой планеты..')
         return
+    planet = planet_class()
     planet.compute()
     planet_constellation = ephem.constellation(planet)
     update.message.reply_text(f'Планета {planet_name.capitalize()} сегодня в \
@@ -57,7 +64,7 @@ def talk_to_me(bot, update):
  
 
 def main():
-    mybot = Updater("1040891049:AAGkE0GpQiMF70jPQcpnGE-eIMO70VN_BGg", request_kwargs=PROXY)
+    mybot = Updater(KEY, request_kwargs=PROXY)
     
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
