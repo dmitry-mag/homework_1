@@ -14,19 +14,19 @@
 """
 import logging
 import ephem
-
-try:
-    with open('key.txt', 'r') as key_file:
-        KEY = key_file.readline()
-except FileNotFoundError:
-    print('WARNING!! key.txt not found!!')
-
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import os
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
                     filename='bot.log'
 )
+
+KEY = os.environ.get('BOT_KEY')
+if not KEY:
+    logging.warning('WARNING!! BOT_KEY environ variable not found!!')
+
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
 
 
 PROXY = {
@@ -52,9 +52,9 @@ def planet_info(bot, update):
         return
     planet = planet_class()
     planet.compute()
-    planet_constellation = ephem.constellation(planet)
-    update.message.reply_text(f'Планета {planet_name.capitalize()} сегодня в \
-                                созвездии(ях) {planet_constellation}')
+    planet_constellation = ephem.constellation(planet)[1]
+    update.message.reply_text(f'Планета {planet_name.capitalize()} сегодня в' \
+                                f' созвездии {planet_constellation}')
 
 
 def talk_to_me(bot, update):
