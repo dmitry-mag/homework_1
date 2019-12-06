@@ -37,7 +37,7 @@ shuffle(CITIES)
 
 
 PROXY = {
-    'proxy_url': 'socks5://t1.learn.python.ru:1080',
+    'proxy_url': 'socks5h://t1.learn.python.ru:1080',
     'urllib3_proxy_kwargs': {
         'username': 'learn', 
         'password': 'python'
@@ -95,7 +95,9 @@ def play_cities(bot, update, user_data):
     
 
 def calculate(bot, update):
-    """ Функция еще в разработке!!! """
+    """ Функция еще в разработке!!! 
+    Полная шляпа, буду делать по другому...
+    """
     user_input = update.message.text
     first = ''
     second = ''
