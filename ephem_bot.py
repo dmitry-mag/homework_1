@@ -28,7 +28,7 @@ KEY = os.environ.get('BOT_KEY')
 if not KEY:
     logging.warning('WARNING!! BOT_KEY environ variable not found!!')
 
-# initialization list of cities for future games with users
+# initialization list of cities for future games with users and shuffle
 CITIES = []
 with open('cities.txt', 'r', encoding='utf-8') as file:
     for line in file:
@@ -78,49 +78,45 @@ def play_cities(bot, update, user_data):
         user_data['cities'] = list(CITIES)
         user_data['last_bot_city'] = ''
     
-    city_name = update.message.text.split()[1].lower()
-    if city_name in user_data['cities'] and (city_name[1] == user_data['last_bot_city'][-1]
-                                             or not user_data['last_bot_city']):
-        user_data['cities'].remove(city_name)
-        for city in user_data['cities']:
-            if city[1] == city_name[-1]:
-                user_data['last_bot_city'] = city
-                user_data['cities'].remove(city)
-                update.message.reply_text(f'{city.capitalize()}, ваш ход')
-                return
-        update.message.reply_text(f'Поздравляю, Вы победили, я больше не знаю городов' \
-                                  f' на букву {city_name[-1].upper()}')
+    current_user_city = update.message.text.split()[1].lower()
+    # check is the city in our list of cities
+    if current_user_city in user_data['cities']:
+        # check does the first letter of user city equals last letter of bot city
+        # or it is first players turn
+        if not user_data['last_bot_city'] or \
+                        current_user_city[0] == user_data['last_bot_city'][-1]:            
+            user_data['cities'].remove(current_user_city)
+            # try to find good city for bot answer
+            for city in user_data['cities']:
+                if city[0] == current_user_city[-1]:
+                    user_data['last_bot_city'] = city
+                    user_data['cities'].remove(city)
+                    update.message.reply_text(f'{city.capitalize()}, your turn')
+                    return
+            # not found city
+            update.message.reply_text(f"Congratulations! You win, I don't know " \
+                   f'more cities begins with "{current_user_city[-1].upper()}"')
+        else:
+            # user city in list, but not acceptable
+            update.message.reply_text(f'Your next city must begins with ' \
+                    f'"{user_data["last_bot_city"][-1].capitalize()}" letter')
     else:
-        update.message.reply_text('Не знаю такой город или его уже называли')
+        # city not in list of cities
+        update.message.reply_text("I don't know this city or " \
+                                             "it has already used in game")
     
 
 def calculate(bot, update):
-    """ Функция еще в разработке!!! 
-    Полная шляпа, буду делать по другому...
-    """
+    """ function emulating calculator """
+
+    # right now it is dummy
     user_input = update.message.text
-    first = ''
-    second = ''
     signs = ['+', '-', '*', '/']
-    sign = ''
-    result = ''
-    for item in user_input:
-        if item.isdigit() and not sign:
-            first += item
-        elif item in signs and not sign:
-            sign = item
-        elif item in signs and sign:
-            update.message.reply_text('Вводите знаки операций по одному!')
-            return
-        elif item.isdigit() and sign:
-            second += item
-        elif item in signs and sign and first and second:
-            exec(f'first = str(int({first}) {sign} int({second}))')
-            sign = item
-            second = ''
-    # похоже такой exec не работает !!!! Fix it!
-    exec(f'result = str(int({first}) {sign} int({second}))')
-    update.message.reply_text(f'Результат: {result}')
+    result_string = '2 + 2'
+    for symbol in user_input:
+        pass
+    result = eval(result_string)
+    update.message.reply_text(f'Result is {result}')
 
 
 def main():
