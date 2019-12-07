@@ -79,6 +79,12 @@ def play_cities(bot, update, user_data):
         user_data['last_bot_city'] = ''
     
     current_user_city = update.message.text.split()[1].lower()
+    # "/calc reset" command to reset user data
+    if current_user_city == 'reset':
+        user_data.pop('cities', '')
+        user_data.pop('last_bot_city', '')
+        update.message.reply_text('Bot has prepared for new game..')
+        return
     # check is the city in our list of cities
     if current_user_city in user_data['cities']:
         # check does the first letter of user city equals last letter of bot city
@@ -92,6 +98,8 @@ def play_cities(bot, update, user_data):
                     user_data['last_bot_city'] = city
                     user_data['cities'].remove(city)
                     update.message.reply_text(f'{city.capitalize()}, your turn')
+                    # validate last letter of bot sity
+                    
                     return
             # not found city
             update.message.reply_text(f"Congratulations! You win, I don't know " \
@@ -111,11 +119,25 @@ def calculate(bot, update):
 
     # right now it is dummy
     user_input = update.message.text
-    signs = ['+', '-', '*', '/']
-    result_string = '2 + 2'
+    signs = ['+', '*', '/']
+    result_string = 'x'
+    is_current_number_float = False
     for symbol in user_input:
-        pass
-    result = eval(result_string)
+        if symbol.isdigit():
+            result_string += symbol
+        elif symbol == '.' and not is_current_number_float:
+            result_string += symbol
+            is_current_number_float = True
+        elif symbol in signs and result_string[-1] not in (signs + ['x', '-']):
+            result_string += symbol
+            is_current_number_float = False
+        elif symbol == '-':
+            result_string += symbol
+            is_current_number_float = False
+    # check last symbol
+    if result_string[-1] in (signs + ['-']):
+        result_string = result_string[:-1]
+    result = eval(result_string[1:])
     update.message.reply_text(f'Result is {result}')
 
 
